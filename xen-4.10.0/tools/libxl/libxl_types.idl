@@ -815,6 +815,14 @@ libxl_device_vdispl = Struct("device_vdispl", [
     ("connectors", Array(libxl_connector_param, "num_connectors"))
     ])
 
+libxl_device_vgpio = Struct("device_vgpio", [
+    ("backend_domid", libxl_domid),
+    ("backend_domname", string),
+    ("devid", libxl_devid),
+    ("gpio_pin", integer),
+    ("num_gpio", integer)
+    ])
+
 libxl_domain_config = Struct("domain_config", [
     ("c_info", libxl_domain_create_info),
     ("b_info", libxl_domain_build_info),
@@ -829,6 +837,7 @@ libxl_domain_config = Struct("domain_config", [
     ("vtpms", Array(libxl_device_vtpm, "num_vtpms")),
     ("p9s", Array(libxl_device_p9, "num_p9s")),
     ("vdispls", Array(libxl_device_vdispl, "num_vdispls")),
+    ("vgpios", Array(libxl_device_vgpio, "num_vgpios")), 
     # a channel manifests as a console with a name,
     # see docs/misc/channels.txt
     ("channels", Array(libxl_device_channel, "num_channels")),
@@ -945,6 +954,16 @@ libxl_vdisplinfo = Struct("vdisplinfo", [
     ("state", integer),
     ("be_alloc", bool),
     ("connectors", Array(libxl_connectorinfo, "num_connectors"))
+    ], dir=DIR_OUT)
+    
+libxl_vgpioinfo = Struct("vgpioinfo", [
+    ("backend", string),
+    ("backend_id", uint32),
+    ("frontend", string),
+    ("frontend_id", uint32),
+    ("devid", libxl_devid),
+    ("state", integer),
+    ("gpio_pin", integer)
     ], dir=DIR_OUT)
 
 # NUMA node characteristics: size and free are how much memory it has, and how

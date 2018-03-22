@@ -417,7 +417,6 @@ int parse_nic_config(libxl_device_nic *nic, XLU_Config **config, char *token)
     char *endptr, *oparg;
     int i;
     unsigned int val;
-
     if (MATCH_OPTION("type", token, oparg)) {
         if (!strcmp("vif", oparg)) {
             nic->nictype = LIBXL_NIC_TYPE_VIF;
@@ -851,6 +850,36 @@ out:
     return rc;
 }
 
+int parse_vgpio_config(libxl_device_vgpio *vgpio, char *token)
+{
+    char *oparg;
+    //libxl_string_list connectors = NULL;
+   // int i;
+    int rc;
+
+	printf("parse_vgpio_config(): %s\n", token);
+
+    if (MATCH_OPTION("output", token, oparg)) {
+        //vgpio->backend_domname = strdup(oparg);
+        printf("output: %s\n", strdup(oparg));
+    } else if (MATCH_OPTION("input", token, oparg)) {
+        printf("input: %s\n", strdup(oparg));
+        //vgpio->gpio_pin = strtoul(oparg, NULL, 0);
+    } else if (MATCH_OPTION("irq", token, oparg)) {
+        printf("irq: %s\n", strdup(oparg));
+    } else if (MATCH_OPTION("pirq", token, oparg)) {
+        printf("pirq: %s\n", strdup(oparg));
+    } 
+	else {
+        fprintf(stderr, "Unknown string \"%s\" in vgpio spec\n", token);
+        rc = 1; goto out;
+        
+    }
+    rc = 0;
+out:
+    return rc;
+}
+
 void parse_config_data(const char *config_source,
                        const char *config_data,
                        int config_len,
@@ -860,7 +889,7 @@ void parse_config_data(const char *config_source,
     long l, vcpus = 0;
     XLU_Config *config;
     XLU_ConfigList *cpus, *vbds, *nics, *pcis, *cvfbs, *cpuids, *vtpms,
-                   *usbctrls, *usbdevs, *p9devs, *vdispls;
+                   *usbctrls, *usbdevs, *p9devs, *vdispls, *vgpios;
     XLU_ConfigList *channels, *ioports, *irqs, *iomem, *viridian, *dtdevs,
                    *mca_caps;
     int num_ioports, num_irqs, num_iomem, num_cpus, num_viridian, num_mca_caps;
@@ -1757,6 +1786,39 @@ void parse_config_data(const char *config_source,
             free(path);
         }
     }
+
+	if (!xlu_cfg_get_list (config, "gpio", &vgpios, 0, 0)) {
+		printf("parsing GPIOs\n");
+		d_config->num_vgpios = 0;
+        d_config->vgpios = NULL;
+        
+        //~ vgpio = ARRAY_EXTEND_INIT(d_config->vgpios,
+                                       //~ d_config->num_vgpios,
+                                       //~ libxl_device_vgpio_init);
+        while ((buf = xlu_cfg_get_listitem(vgpios, d_config->num_vgpios)) != NULL) {
+            
+            libxl_device_vgpio *vgpio;
+            char * buf2 = strdup(buf);
+            printf("buf 2: %s\n", buf2);
+            char *p;
+            vgpio = ARRAY_EXTEND_INIT(d_config->vgpios,
+                                       d_config->num_vgpios,
+                                       libxl_device_vgpio_init);
+            p = strtok (buf2, ";");
+            while (p != NULL)
+            {
+                while (*p == ' ') p++;
+                if (parse_vgpio_config(vgpio, p)) {
+                    free(buf2);
+                    exit(1);
+                }
+                p = strtok (NULL, ";");
+            }
+            free(buf2);
+        }
+        
+        printf("gpios parsed\n");
+	}
 
     if (!xlu_cfg_get_list (config, "vif", &nics, 0, 0)) {
         d_config->num_nics = 0;
