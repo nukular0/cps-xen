@@ -860,16 +860,18 @@ int parse_vgpio_config(libxl_device_vgpio *vgpio, char *token)
 	printf("parse_vgpio_config(): %s\n", token);
 
     if (MATCH_OPTION("output", token, oparg)) {
-        //vgpio->backend_domname = strdup(oparg);
+        vgpio->output_pins = strdup(oparg);
         printf("output: %s\n", strdup(oparg));
     } else if (MATCH_OPTION("input", token, oparg)) {
         printf("input: %s\n", strdup(oparg));
-        //vgpio->gpio_pin = strtoul(oparg, NULL, 0);
+        vgpio->input_pins = strdup(oparg);
     } else if (MATCH_OPTION("irq", token, oparg)) {
         printf("irq: %s\n", strdup(oparg));
-    } else if (MATCH_OPTION("pirq", token, oparg)) {
-        printf("pirq: %s\n", strdup(oparg));
-    } 
+        vgpio->irq_pins = strdup(oparg);
+	}
+    //~ else if (MATCH_OPTION("pirq", token, oparg)) {
+        //~ printf("pirq: %s\n", strdup(oparg));
+    //~ } 
 	else {
         fprintf(stderr, "Unknown string \"%s\" in vgpio spec\n", token);
         rc = 1; goto out;
@@ -1799,7 +1801,6 @@ void parse_config_data(const char *config_source,
             
             libxl_device_vgpio *vgpio;
             char * buf2 = strdup(buf);
-            printf("buf 2: %s\n", buf2);
             char *p;
             vgpio = ARRAY_EXTEND_INIT(d_config->vgpios,
                                        d_config->num_vgpios,
@@ -1816,8 +1817,6 @@ void parse_config_data(const char *config_source,
             }
             free(buf2);
         }
-        
-        printf("gpios parsed\n");
 	}
 
     if (!xlu_cfg_get_list (config, "vif", &nics, 0, 0)) {

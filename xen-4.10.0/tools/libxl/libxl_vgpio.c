@@ -43,7 +43,6 @@ static void libxl__update_config_vgpio(libxl__gc *gc,
                                         libxl_device_vgpio *src)
 {
     dst->devid = src->devid;
-    dst->gpio_pin = src->gpio_pin;
 }
 
 static int libxl_device_vgpio_compare(libxl_device_vgpio *d1,
@@ -65,11 +64,12 @@ static int libxl__set_xenstore_vgpio(libxl__gc *gc, uint32_t domid,
                                       flexarray_t *ro_front)
 {
 
-    flexarray_append_pair(front, "gpio-pin",
-                          GCSPRINTF("%d", vgpio->gpio_pin));
-	flexarray_append_pair(back, "gpio-pin",
-                          GCSPRINTF("%d", vgpio->gpio_pin));
-
+    flexarray_append_pair(back, "output-pins",
+                          GCSPRINTF("%s", vgpio->output_pins));
+	flexarray_append_pair(back, "input-pins",
+                          GCSPRINTF("%s", vgpio->input_pins));
+	flexarray_append_pair(back, "irq-pins",
+					  GCSPRINTF("%s", vgpio->irq_pins));
     return 0;
 }
 
@@ -107,8 +107,16 @@ int libxl_device_vgpio_getinfo(libxl_ctx *ctx, uint32_t domid,
                              NULL);
     info->frontend_id = domid;
 
-    val = libxl__xs_read(gc, XBT_NULL, GCSPRINTF("%s/gpio-pin", devpath));
-    info->gpio_pin = val ? strtoul(val, NULL, 10) : 0;
+	printf("libxl_device_vgpio_getinfo...\n");
+    val = libxl__xs_read(gc, XBT_NULL, GCSPRINTF("%s/output-pins", devpath));
+    info->output_pins = val;
+    
+    val = libxl__xs_read(gc, XBT_NULL, GCSPRINTF("%s/input-pins", devpath));
+    info->input_pins = val;
+    
+    val = libxl__xs_read(gc, XBT_NULL, GCSPRINTF("%s/irq-pins", devpath));
+    info->irq_pins = val;
+	printf("OK!\n");
 
     rc = 0;
 

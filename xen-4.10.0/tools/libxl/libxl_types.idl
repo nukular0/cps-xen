@@ -819,8 +819,9 @@ libxl_device_vgpio = Struct("device_vgpio", [
     ("backend_domid", libxl_domid),
     ("backend_domname", string),
     ("devid", libxl_devid),
-    ("gpio_pin", integer),
-    ("num_gpio", integer)
+    ("output_pins", string),
+    ("input_pins", string),
+    ("irq_pins", string)
     ])
 
 libxl_domain_config = Struct("domain_config", [
@@ -963,7 +964,9 @@ libxl_vgpioinfo = Struct("vgpioinfo", [
     ("frontend_id", uint32),
     ("devid", libxl_devid),
     ("state", integer),
-    ("gpio_pin", integer)
+    ("output_pins", string),
+    ("input_pins", string),
+    ("irq_pins", string)
     ], dir=DIR_OUT)
 
 # NUMA node characteristics: size and free are how much memory it has, and how
