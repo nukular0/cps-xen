@@ -70,6 +70,14 @@ static int libxl__set_xenstore_vgpio(libxl__gc *gc, uint32_t domid,
                           GCSPRINTF("%s", vgpio->input_pins));
 	flexarray_append_pair(back, "irq-pins",
 					  GCSPRINTF("%s", vgpio->irq_pins));
+					  
+	
+    flexarray_append_pair(ro_front, "output-pins",
+                          GCSPRINTF("%s", vgpio->output_pins));
+	flexarray_append_pair(ro_front, "input-pins",
+                          GCSPRINTF("%s", vgpio->input_pins));
+	flexarray_append_pair(ro_front, "irq-pins",
+					  GCSPRINTF("%s", vgpio->irq_pins));
     return 0;
 }
 
