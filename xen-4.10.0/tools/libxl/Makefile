@@ -129,7 +129,9 @@ endif
 
 LIBXL_LIBS += -lyajl
 
-LIBXL_OBJS = libxl_vgpio.o flexarray.o libxl.o libxl_create.o libxl_dm.o libxl_pci.o \
+LIBXL_OBJS = libxl_vspi.o \
+			libxl_vgpio.o \
+			flexarray.o libxl.o libxl_create.o libxl_dm.o libxl_pci.o \
 			libxl_dom.o libxl_exec.o libxl_xshelp.o libxl_device.o \
 			libxl_internal.o libxl_utils.o libxl_uuid.o \
 			libxl_json.o libxl_aoutils.o libxl_numa.o libxl_vnuma.o \
@@ -139,7 +141,7 @@ LIBXL_OBJS = libxl_vgpio.o flexarray.o libxl.o libxl_create.o libxl_dm.o libxl_p
 			libxl_dom_suspend.o libxl_dom_save.o libxl_usb.o \
 			libxl_vtpm.o libxl_nic.o libxl_disk.o libxl_console.o \
 			libxl_cpupool.o libxl_mem.o libxl_sched.o libxl_tmem.o \
-			libxl_9pfs.o libxl_domain.o libxl_vdispl.o  \
+			libxl_9pfs.o libxl_domain.o libxl_vdispl.o \
                         $(LIBXL_OBJS-y)
 LIBXL_OBJS += libxl_genid.o
 LIBXL_OBJS += _libxl_types.o libxl_flask.o _libxl_types_internal.o

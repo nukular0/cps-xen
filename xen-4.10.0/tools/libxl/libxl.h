@@ -1952,9 +1952,33 @@ int libxl_device_vdispl_getinfo(libxl_ctx *ctx, uint32_t domid,
                                 libxl_vdisplinfo *vdisplinfo)
                                 LIBXL_EXTERNAL_CALLERS_ONLY;
 
+/* SPI */
+int libxl_device_vspi_add(libxl_ctx *ctx, uint32_t domid,
+                            libxl_device_vspi *spi,
+                            const libxl_asyncop_how *ao_how)
+                            LIBXL_EXTERNAL_CALLERS_ONLY;
+int libxl_device_vspi_remove(libxl_ctx *ctx, uint32_t domid,
+                               libxl_device_vspi *vspi,
+                               const libxl_asyncop_how *ao_how)
+                               LIBXL_EXTERNAL_CALLERS_ONLY;
+int libxl_device_vspi_destroy(libxl_ctx *ctx, uint32_t domid,
+                                libxl_device_vspi *vspi,
+                                const libxl_asyncop_how *ao_how)
+                                LIBXL_EXTERNAL_CALLERS_ONLY;
+
+libxl_device_vspi *libxl_device_vspi_list(libxl_ctx *ctx,
+                                              uint32_t domid, int *num)
+                                              LIBXL_EXTERNAL_CALLERS_ONLY;
+void libxl_device_vspi_list_free(libxl_device_vspi* list, int num)
+                                   LIBXL_EXTERNAL_CALLERS_ONLY;
+int libxl_device_vspi_getinfo(libxl_ctx *ctx, uint32_t domid,
+                                libxl_device_vspi *vspi,
+                                libxl_vspiinfo *vspiinfo)
+                                LIBXL_EXTERNAL_CALLERS_ONLY;
+
 /* GPIO */
 int libxl_device_vgpio_add(libxl_ctx *ctx, uint32_t domid,
-                            libxl_device_vgpio *displ,
+                            libxl_device_vgpio *gpio,
                             const libxl_asyncop_how *ao_how)
                             LIBXL_EXTERNAL_CALLERS_ONLY;
 int libxl_device_vgpio_remove(libxl_ctx *ctx, uint32_t domid,

@@ -823,6 +823,13 @@ libxl_device_vgpio = Struct("device_vgpio", [
     ("input_pins", string),
     ("irq_pins", string)
     ])
+    
+libxl_device_vspi = Struct("device_vspi", [
+    ("backend_domid", libxl_domid),
+    ("backend_domname", string),
+    ("devid", libxl_devid),
+    ("busnum", integer)
+    ])
 
 libxl_domain_config = Struct("domain_config", [
     ("c_info", libxl_domain_create_info),
@@ -839,6 +846,7 @@ libxl_domain_config = Struct("domain_config", [
     ("p9s", Array(libxl_device_p9, "num_p9s")),
     ("vdispls", Array(libxl_device_vdispl, "num_vdispls")),
     ("vgpios", Array(libxl_device_vgpio, "num_vgpios")), 
+    ("vspis", Array(libxl_device_vspi, "num_vspis")), 
     # a channel manifests as a console with a name,
     # see docs/misc/channels.txt
     ("channels", Array(libxl_device_channel, "num_channels")),
@@ -967,6 +975,16 @@ libxl_vgpioinfo = Struct("vgpioinfo", [
     ("output_pins", string),
     ("input_pins", string),
     ("irq_pins", string)
+    ], dir=DIR_OUT)
+
+libxl_vspiinfo = Struct("vspiinfo", [
+    ("backend", string),
+    ("backend_id", uint32),
+    ("frontend", string),
+    ("frontend_id", uint32),
+    ("devid", libxl_devid),
+    ("state", integer),
+    ("busnum", integer)
     ], dir=DIR_OUT)
 
 # NUMA node characteristics: size and free are how much memory it has, and how

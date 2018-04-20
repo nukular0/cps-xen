@@ -853,8 +853,7 @@ out:
 int parse_vgpio_config(libxl_device_vgpio *vgpio, char *token)
 {
     char *oparg;
-    //libxl_string_list connectors = NULL;
-   // int i;
+
     int rc;
 
 	printf("parse_vgpio_config(): %s\n", token);
@@ -869,9 +868,6 @@ int parse_vgpio_config(libxl_device_vgpio *vgpio, char *token)
         printf("irq: %s\n", strdup(oparg));
         vgpio->irq_pins = strdup(oparg);
 	}
-    //~ else if (MATCH_OPTION("pirq", token, oparg)) {
-        //~ printf("pirq: %s\n", strdup(oparg));
-    //~ } 
 	else {
         fprintf(stderr, "Unknown string \"%s\" in vgpio spec\n", token);
         rc = 1; goto out;
@@ -882,6 +878,29 @@ out:
     return rc;
 }
 
+int parse_vspi_config(libxl_device_vspi *vspi, char *token)
+{
+    char *oparg;
+
+    int rc;
+
+	printf("parse_vspi_config(): %s\n", token);
+
+    if (MATCH_OPTION("busnum", token, oparg)) {
+        vspi->busnum = atoi(oparg);
+        printf("output: %s\n", strdup(oparg));
+    } 
+	else {
+        fprintf(stderr, "Unknown string \"%s\" in vspi spec\n", token);
+        rc = 1; goto out;
+        
+    }
+    rc = 0;
+out:
+    return rc;
+}
+
+
 void parse_config_data(const char *config_source,
                        const char *config_data,
                        int config_len,
@@ -891,7 +910,7 @@ void parse_config_data(const char *config_source,
     long l, vcpus = 0;
     XLU_Config *config;
     XLU_ConfigList *cpus, *vbds, *nics, *pcis, *cvfbs, *cpuids, *vtpms,
-                   *usbctrls, *usbdevs, *p9devs, *vdispls, *vgpios;
+                   *usbctrls, *usbdevs, *p9devs, *vdispls, *vgpios, *vspis;
     XLU_ConfigList *channels, *ioports, *irqs, *iomem, *viridian, *dtdevs,
                    *mca_caps;
     int num_ioports, num_irqs, num_iomem, num_cpus, num_viridian, num_mca_caps;
@@ -1790,13 +1809,10 @@ void parse_config_data(const char *config_source,
     }
 
 	if (!xlu_cfg_get_list (config, "gpio", &vgpios, 0, 0)) {
-		printf("parsing GPIOs\n");
 		d_config->num_vgpios = 0;
         d_config->vgpios = NULL;
         
-        //~ vgpio = ARRAY_EXTEND_INIT(d_config->vgpios,
-                                       //~ d_config->num_vgpios,
-                                       //~ libxl_device_vgpio_init);
+     
         while ((buf = xlu_cfg_get_listitem(vgpios, d_config->num_vgpios)) != NULL) {
             
             libxl_device_vgpio *vgpio;
@@ -1814,6 +1830,33 @@ void parse_config_data(const char *config_source,
                     exit(1);
                 }
                 p = strtok (NULL, ";");
+            }
+            free(buf2);
+        }
+	}
+	
+	if (!xlu_cfg_get_list (config, "spi", &vspis, 0, 0)) {
+		printf("found spi\n");
+		d_config->num_vspis = 0;
+        d_config->vspis = NULL;
+        
+
+        while ((buf = xlu_cfg_get_listitem(vspis, d_config->num_vspis)) != NULL) {
+            libxl_device_vspi *vspi;
+            char * buf2 = strdup(buf);
+            char *p;
+            vspi = ARRAY_EXTEND_INIT(d_config->vspis,
+                                       d_config->num_vspis,
+                                       libxl_device_vspi_init);
+            p = strtok (buf2, ",");
+            while (p != NULL)
+            {
+                while (*p == ' ') p++;
+                if (parse_vspi_config(vspi, p)) {
+                    free(buf2);
+                    exit(1);
+                }
+                p = strtok (NULL, ",");
             }
             free(buf2);
         }
