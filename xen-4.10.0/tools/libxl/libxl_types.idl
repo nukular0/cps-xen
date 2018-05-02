@@ -828,7 +828,9 @@ libxl_device_vspi = Struct("device_vspi", [
     ("backend_domid", libxl_domid),
     ("backend_domname", string),
     ("devid", libxl_devid),
-    ("busnum", integer)
+    ("busnum", integer),
+    ("max_speed_hz", integer),
+    ("num_cs", integer)
     ])
 
 libxl_domain_config = Struct("domain_config", [
@@ -984,7 +986,9 @@ libxl_vspiinfo = Struct("vspiinfo", [
     ("frontend_id", uint32),
     ("devid", libxl_devid),
     ("state", integer),
-    ("busnum", integer)
+    ("busnum", integer),
+    ("max_speed_hz", integer),
+    ("num_cs", integer)
     ], dir=DIR_OUT)
 
 # NUMA node characteristics: size and free are how much memory it has, and how

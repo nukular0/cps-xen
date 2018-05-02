@@ -63,14 +63,14 @@ static int libxl__set_xenstore_vspi(libxl__gc *gc, uint32_t domid,
                                       flexarray_t *back, flexarray_t *front,
                                       flexarray_t *ro_front)
 {
-
-    flexarray_append_pair(back, "busnum",
-                          GCSPRINTF("%d", vspi->busnum));
-
-					  
+				  
 	
     flexarray_append_pair(ro_front, "busnum",
                           GCSPRINTF("%d", vspi->busnum));
+    flexarray_append_pair(ro_front, "num_cs",
+                          GCSPRINTF("%d", vspi->num_cs));
+    flexarray_append_pair(ro_front, "max_speed_hz",
+                          GCSPRINTF("%d", vspi->max_speed_hz));
 
     return 0;
 }
@@ -110,7 +110,11 @@ int libxl_device_vspi_getinfo(libxl_ctx *ctx, uint32_t domid,
     info->frontend_id = domid;
 
 	val = libxl__xs_read(gc, XBT_NULL, GCSPRINTF("%s/busnum", devpath));
-    info->busnum = val ? strtoul(val, NULL, 10) : -1;;
+    info->busnum = val ? strtoul(val, NULL, 10) : -1;
+	val = libxl__xs_read(gc, XBT_NULL, GCSPRINTF("%s/max_speed_hz", devpath));
+    info->max_speed_hz = val ? strtoul(val, NULL, 10) : -1;
+	val = libxl__xs_read(gc, XBT_NULL, GCSPRINTF("%s/num_cs", devpath));
+    info->num_cs = val ? strtoul(val, NULL, 10) : -1;
     
     rc = 0;
 

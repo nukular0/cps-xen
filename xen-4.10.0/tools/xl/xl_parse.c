@@ -888,7 +888,12 @@ int parse_vspi_config(libxl_device_vspi *vspi, char *token)
 
     if (MATCH_OPTION("busnum", token, oparg)) {
         vspi->busnum = atoi(oparg);
-        printf("output: %s\n", strdup(oparg));
+    }
+    else if (MATCH_OPTION("max_speed_hz", token, oparg)) {
+        vspi->max_speed_hz = atoi(oparg);
+    } 
+    else if (MATCH_OPTION("num_cs", token, oparg)) {
+        vspi->num_cs = atoi(oparg);
     } 
 	else {
         fprintf(stderr, "Unknown string \"%s\" in vspi spec\n", token);
