@@ -905,6 +905,28 @@ out:
     return rc;
 }
 
+int parse_vcan_config(libxl_device_vcan *vcan, char *token)
+{
+    char *oparg;
+
+    int rc;
+
+	if (MATCH_OPTION("rx", token, oparg)) {
+		vcan->rx = strdup(oparg);
+    }
+    else if (MATCH_OPTION("tx", token, oparg)) {
+		vcan->tx = strdup(oparg);
+    } 
+	else {
+        fprintf(stderr, "Unknown string \"%s\" in vcan spec\n", token);
+        rc = 1; goto out;
+        
+    }
+    rc = 0;
+out:
+    return rc;
+}
+
 
 void parse_config_data(const char *config_source,
                        const char *config_data,
@@ -915,7 +937,8 @@ void parse_config_data(const char *config_source,
     long l, vcpus = 0;
     XLU_Config *config;
     XLU_ConfigList *cpus, *vbds, *nics, *pcis, *cvfbs, *cpuids, *vtpms,
-                   *usbctrls, *usbdevs, *p9devs, *vdispls, *vgpios, *vspis;
+                   *usbctrls, *usbdevs, *p9devs, *vdispls, *vgpios, *vspis,
+                   *vcans;
     XLU_ConfigList *channels, *ioports, *irqs, *iomem, *viridian, *dtdevs,
                    *mca_caps;
     int num_ioports, num_irqs, num_iomem, num_cpus, num_viridian, num_mca_caps;
@@ -1858,6 +1881,32 @@ void parse_config_data(const char *config_source,
             {
                 while (*p == ' ') p++;
                 if (parse_vspi_config(vspi, p)) {
+                    free(buf2);
+                    exit(1);
+                }
+                p = strtok (NULL, ",");
+            }
+            free(buf2);
+        }
+	}
+	
+	if (!xlu_cfg_get_list (config, "can", &vcans, 0, 0)) {
+		d_config->num_vcans = 0;
+        d_config->vcans = NULL;
+        
+
+        while ((buf = xlu_cfg_get_listitem(vcans, d_config->num_vcans)) != NULL) {
+            libxl_device_vcan *vcan;
+            char * buf2 = strdup(buf);
+            char *p;
+            vcan = ARRAY_EXTEND_INIT(d_config->vcans,
+                                       d_config->num_vcans,
+                                       libxl_device_vcan_init);
+            p = strtok (buf2, ",");
+            while (p != NULL)
+            {
+                while (*p == ' ') p++;
+                if (parse_vcan_config(vcan, p)) {
                     free(buf2);
                     exit(1);
                 }

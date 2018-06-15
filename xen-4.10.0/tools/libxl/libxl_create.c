@@ -1491,6 +1491,7 @@ const struct libxl_device_type *device_type_tbl[] = {
     &libxl__vdispl_devtype,
     &libxl__vgpio_devtype,
     &libxl__vspi_devtype,
+    &libxl__vcan_devtype,
     NULL
 };
 

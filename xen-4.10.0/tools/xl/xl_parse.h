@@ -36,6 +36,7 @@ int parse_nic_config(libxl_device_nic *nic, XLU_Config **config, char *token);
 int parse_vdispl_config(libxl_device_vdispl *vdispl, char *token);
 int parse_vgpio_config(libxl_device_vgpio *vgpio, char *token);
 int parse_vspi_config(libxl_device_vspi *vspi, char *token);
+int parse_vcan_config(libxl_device_vcan *vcan, char *token);
 
 int match_option_size(const char *prefix, size_t len,
                       char *arg, char **argopt);

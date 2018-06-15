@@ -1998,6 +1998,30 @@ void libxl_device_vgpio_list_free(libxl_device_vgpio* list, int num)
 int libxl_device_vgpio_getinfo(libxl_ctx *ctx, uint32_t domid,
                                 libxl_device_vgpio *vgpio,
                                 libxl_vgpioinfo *vgpioinfo)
+							
+                                LIBXL_EXTERNAL_CALLERS_ONLY;
+/* CAN */
+int libxl_device_vcan_add(libxl_ctx *ctx, uint32_t domid,
+                            libxl_device_vcan *can,
+                            const libxl_asyncop_how *ao_how)
+                            LIBXL_EXTERNAL_CALLERS_ONLY;
+int libxl_device_vcan_remove(libxl_ctx *ctx, uint32_t domid,
+                               libxl_device_vcan *vcan,
+                               const libxl_asyncop_how *ao_how)
+                               LIBXL_EXTERNAL_CALLERS_ONLY;
+int libxl_device_vcan_destroy(libxl_ctx *ctx, uint32_t domid,
+                                libxl_device_vcan *vcan,
+                                const libxl_asyncop_how *ao_how)
+                                LIBXL_EXTERNAL_CALLERS_ONLY;
+
+libxl_device_vcan *libxl_device_vcan_list(libxl_ctx *ctx,
+                                              uint32_t domid, int *num)
+                                              LIBXL_EXTERNAL_CALLERS_ONLY;
+void libxl_device_vcan_list_free(libxl_device_vcan* list, int num)
+                                   LIBXL_EXTERNAL_CALLERS_ONLY;
+int libxl_device_vcan_getinfo(libxl_ctx *ctx, uint32_t domid,
+                                libxl_device_vcan *vcan,
+                                libxl_vcaninfo *vcaninfo)
                                 LIBXL_EXTERNAL_CALLERS_ONLY;
 
 /* Keyboard */

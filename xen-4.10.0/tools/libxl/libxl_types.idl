@@ -832,6 +832,14 @@ libxl_device_vspi = Struct("device_vspi", [
     ("max_speed_hz", integer),
     ("num_cs", integer)
     ])
+    
+libxl_device_vcan = Struct("device_vcan", [
+    ("backend_domid", libxl_domid),
+    ("backend_domname", string),
+    ("devid", libxl_devid),
+    ("rx", string),
+    ("tx", string)
+    ])
 
 libxl_domain_config = Struct("domain_config", [
     ("c_info", libxl_domain_create_info),
@@ -849,6 +857,7 @@ libxl_domain_config = Struct("domain_config", [
     ("vdispls", Array(libxl_device_vdispl, "num_vdispls")),
     ("vgpios", Array(libxl_device_vgpio, "num_vgpios")), 
     ("vspis", Array(libxl_device_vspi, "num_vspis")), 
+    ("vcans", Array(libxl_device_vcan, "num_vcans")), 
     # a channel manifests as a console with a name,
     # see docs/misc/channels.txt
     ("channels", Array(libxl_device_channel, "num_channels")),
@@ -989,6 +998,15 @@ libxl_vspiinfo = Struct("vspiinfo", [
     ("busnum", integer),
     ("max_speed_hz", integer),
     ("num_cs", integer)
+    ], dir=DIR_OUT)
+
+libxl_vcaninfo = Struct("vcaninfo", [
+    ("backend", string),
+    ("backend_id", uint32),
+    ("frontend", string),
+    ("frontend_id", uint32),
+    ("devid", libxl_devid),
+    ("state", integer)
     ], dir=DIR_OUT)
 
 # NUMA node characteristics: size and free are how much memory it has, and how

@@ -631,10 +631,13 @@ int main_remus(int argc, char **argv)
     int send_fd = -1, recv_fd = -1;
     pid_t child = -1;
     pid_t hb_child = -1;
+    pid_t pre_child = -1;
     pid_t hb_child_pgid;
+    pid_t pre_child_pgid;
     uint8_t *config_data;
     int config_len;
     char *runhb;
+    char *runpre;
 
     memset(&r_info, 0, sizeof(libxl_domain_remus_info));
 
@@ -730,6 +733,10 @@ int main_remus(int argc, char **argv)
             rune = host;
         } else {
             if (!libxl_defbool_val(r_info.colo)) {
+				printf("ssh_command is %s\n", ssh_command);
+				
+                xasprintf(&runpre, "exec %s %s %s/pre_migrate", ssh_command, host, LIBEXEC_BIN);
+                
                 xasprintf(&rune, "exec %s %s xl migrate-receive %s %s",
                           ssh_command, host,
                           "-r",
@@ -758,6 +765,17 @@ int main_remus(int argc, char **argv)
             }
             exit(0);
         }
+        
+        pre_child = fork();
+        
+        if (!pre_child) {
+            if (system(runpre) != 0) {
+                fprintf(stderr, "Could not run pre migrate script. Aborting");
+                exit(1);
+            }
+            exit(0);
+        }
+
 
         if (!config_len) {
             fprintf(stderr, "No config file stored for running domain and "
@@ -807,6 +825,17 @@ int main_remus(int argc, char **argv)
     }
     if (kill(-hb_child_pgid, SIGTERM)) {
         fprintf(stderr, "Unable to terminate heartbeat child processes. Killing them.\n");
+        kill(-hb_child_pgid, SIGKILL);
+    }
+    
+    pre_child_pgid = getpgid(pre_child);
+    if (pre_child == -1) {
+        fprintf(stderr, "Something ist wrong here. Cannot kill child processes\n");
+        close(send_fd);
+        return EXIT_FAILURE;
+    }
+    if (kill(-pre_child_pgid, SIGTERM)) {
+        fprintf(stderr, "Unable to terminate pre migrate script processes. Killing them.\n");
         kill(-hb_child_pgid, SIGKILL);
     }
 

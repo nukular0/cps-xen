@@ -131,6 +131,7 @@ LIBXL_LIBS += -lyajl
 
 LIBXL_OBJS = libxl_vspi.o \
 			libxl_vgpio.o \
+			libxl_vcan.o \
 			flexarray.o libxl.o libxl_create.o libxl_dm.o libxl_pci.o \
 			libxl_dom.o libxl_exec.o libxl_xshelp.o libxl_device.o \
 			libxl_internal.o libxl_utils.o libxl_uuid.o \
@@ -328,6 +329,7 @@ install: all
 	$(INSTALL_PROG) cpsremus_heartbeat_rcv $(DESTDIR)$(LIBEXEC_BIN)
 	$(INSTALL_PROG) cpsremus_heartbeat_send $(DESTDIR)$(LIBEXEC_BIN)
 	$(INSTALL_PROG) heartbeat_launcher $(DESTDIR)$(LIBEXEC_BIN)
+	$(INSTALL_PROG) pre_migrate $(DESTDIR)$(LIBEXEC_BIN)
 	$(INSTALL_SHLIB) libxenlight.so.$(MAJOR).$(MINOR) $(DESTDIR)$(libdir)
 	$(SYMLINK_SHLIB) libxenlight.so.$(MAJOR).$(MINOR) $(DESTDIR)$(libdir)/libxenlight.so.$(MAJOR)
 	$(SYMLINK_SHLIB) libxenlight.so.$(MAJOR) $(DESTDIR)$(libdir)/libxenlight.so

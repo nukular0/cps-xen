@@ -1,0 +1,22 @@
+#!/bin/bash
+
+modules=( "mcp2515_init" "xen_pvcanback" )
+
+loaded_modules=$(lsmod)
+
+for module in ${modules[@]}
+do
+	loaded=$(echo "$loaded_modules" | grep $module)
+    if [ ! -z "$loaded" ]; 
+	then
+		echo "$module already loaded"
+	else
+		echo "$module not loaded, loading now"
+		modprobe $module
+	fi
+done
+
+
+
+
+
