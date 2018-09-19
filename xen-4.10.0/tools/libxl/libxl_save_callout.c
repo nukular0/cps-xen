@@ -56,6 +56,7 @@ void libxl__xc_domain_restore(libxl__egc *egc, libxl__domain_create_state *dcs,
     const int send_back_fd = dcs->send_back_fd;
     libxl__domain_build_state *const state = &dcs->build_state;
 
+
     unsigned cbflags =
         libxl__srm_callout_enumcallbacks_restore(&shs->callbacks.restore.a);
 

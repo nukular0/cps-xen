@@ -1391,6 +1391,7 @@ static void egc_run_callbacks(libxl__egc *egc)
     EGC_GC;
     libxl_event *ev, *ev_tmp;
     libxl__aop_occurred *aop, *aop_tmp;
+    
 
     LIBXL_TAILQ_FOREACH_SAFE(ev, &egc->occurred_for_callback, link, ev_tmp) {
         LIBXL_TAILQ_REMOVE(&egc->occurred_for_callback, ev, link);
@@ -2021,7 +2022,6 @@ int libxl__ao_inprogress(libxl__ao *ao,
 
     ao->in_initiator = 0;
     ao__manip_leave(CTX, ao);
-
     return rc;
 }
 

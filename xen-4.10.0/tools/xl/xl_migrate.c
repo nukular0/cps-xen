@@ -328,9 +328,9 @@ static void migrate_receive(int debug, int daemonize, int monitor,
     char *migration_domname;
     struct domain_create dom_info;
     libxl_device_nic *nics;
-    struct timeval tv;
     int nb, i;
-
+    struct timeval tv;
+	
     FILE *log;
 
     signal(SIGPIPE, SIG_IGN);
@@ -356,6 +356,7 @@ static void migrate_receive(int debug, int daemonize, int monitor,
     dom_info.userspace_colo_proxy = userspace_colo_proxy;
 
     rc = create_domain(&dom_info);
+    
     if (rc < 0) {
         fprintf(stderr, "migration target: Domain creation failed"
                 " (code %d).\n", rc);
@@ -395,6 +396,7 @@ static void migrate_receive(int debug, int daemonize, int monitor,
                         ha, migration_domname, common_domname, rc);
         }
 
+
         if (checkpointed == LIBXL_CHECKPOINTED_STREAM_COLO)
             /* The guest is running after failover in COLO mode */
             exit(rc ? -ERROR_FAIL: 0);
@@ -404,6 +406,7 @@ static void migrate_receive(int debug, int daemonize, int monitor,
             fprintf(stderr, "migration target (%s): "
                     "Failed to unpause domain %s (id: %u):%d\n",
                     ha, common_domname, domid, rc);
+
 
         /*
          * For a fast network failover we need to send a gratuitous
@@ -418,7 +421,6 @@ static void migrate_receive(int debug, int daemonize, int monitor,
         log = fopen("/tmp/remus_trace.log", "a");
         gettimeofday(&tv, NULL);
         fprintf(log, "Domain resumed at backup. Time: %lu\n", tv.tv_sec*1000000+tv.tv_usec);
-
         fclose(log);
 
         exit(rc ? EXIT_FAILURE : EXIT_SUCCESS);
@@ -631,17 +633,14 @@ int main_remus(int argc, char **argv)
     int send_fd = -1, recv_fd = -1;
     pid_t child = -1;
     pid_t hb_child = -1;
-    pid_t pre_child = -1;
     pid_t hb_child_pgid;
-    pid_t pre_child_pgid;
     uint8_t *config_data;
     int config_len;
     char *runhb;
-    char *runpre;
 
     memset(&r_info, 0, sizeof(libxl_domain_remus_info));
 
-    SWITCH_FOREACH_OPT(opt, "Fbundi:s:N:ecEpt:", NULL, "remus", 2) {
+    SWITCH_FOREACH_OPT(opt, "Fbundi:s:N:ecEpt:f:", NULL, "remus", 2) {
     case 'i':
         r_info.interval = atoi(optarg);
         break;
@@ -680,6 +679,9 @@ int main_remus(int argc, char **argv)
         break;
     case 'p':
         libxl_defbool_set(&r_info.userspace_colo_proxy, true);
+    case 'f':
+		r_info.postfailovercmd = optarg;
+		break;
     }
 
     domid = find_domain(argv[optind]);
@@ -721,6 +723,7 @@ int main_remus(int argc, char **argv)
             r_info.netbufscript = default_remus_netbufscript;
     }
 
+
     if (libxl_defbool_val(r_info.blackhole)) {
         send_fd = open("/dev/null", O_RDWR, 0644);
         if (send_fd < 0) {
@@ -733,15 +736,17 @@ int main_remus(int argc, char **argv)
             rune = host;
         } else {
             if (!libxl_defbool_val(r_info.colo)) {
-				printf("ssh_command is %s\n", ssh_command);
+				printf("### post-failovercmd is '%s' ###\n", r_info.postfailovercmd);
 				
-                xasprintf(&runpre, "exec %s %s %s/pre_migrate", ssh_command, host, LIBEXEC_BIN);
-                
+               
                 xasprintf(&rune, "exec %s %s xl migrate-receive %s %s",
                           ssh_command, host,
                           "-r",
                           daemonize ? "" : " -e");
-                xasprintf(&runhb, "exec %s/heartbeat_launcher %s %i", LIBEXEC_BIN, host, r_info.timeout);
+                xasprintf(&runhb, "exec %s/heartbeat_launcher %s %i %s", LIBEXEC_BIN, 
+																		 host, 
+																		 r_info.timeout, 
+																		 (r_info.postfailovercmd ? r_info.postfailovercmd : ""));
             } else {
                 xasprintf(&rune, "exec %s %s xl migrate-receive %s %s %s %s %s",
                           ssh_command, host,
@@ -759,24 +764,15 @@ int main_remus(int argc, char **argv)
         hb_child = fork();
         
         if (!hb_child) {
-            if (system(runhb) != 0) {
-                fprintf(stderr, "Could not initiate heartbeat. Aborting");
+			rc = system(runhb);
+            if (rc != 0) {
+                fprintf(stderr, "Could not initiate heartbeat (system returned %d). Aborting\n", rc);
                 exit(1);
             }
             exit(0);
         }
         
-        pre_child = fork();
-        
-        if (!pre_child) {
-            if (system(runpre) != 0) {
-                fprintf(stderr, "Could not run pre migrate script. Aborting");
-                exit(1);
-            }
-            exit(0);
-        }
-
-
+       
         if (!config_len) {
             fprintf(stderr, "No config file stored for running domain and "
                     "none supplied - cannot start remus.\n");
@@ -827,18 +823,7 @@ int main_remus(int argc, char **argv)
         fprintf(stderr, "Unable to terminate heartbeat child processes. Killing them.\n");
         kill(-hb_child_pgid, SIGKILL);
     }
-    
-    pre_child_pgid = getpgid(pre_child);
-    if (pre_child == -1) {
-        fprintf(stderr, "Something ist wrong here. Cannot kill child processes\n");
-        close(send_fd);
-        return EXIT_FAILURE;
-    }
-    if (kill(-pre_child_pgid, SIGTERM)) {
-        fprintf(stderr, "Unable to terminate pre migrate script processes. Killing them.\n");
-        kill(-hb_child_pgid, SIGKILL);
-    }
-
+ 
     close(send_fd);
     return EXIT_FAILURE;
 }

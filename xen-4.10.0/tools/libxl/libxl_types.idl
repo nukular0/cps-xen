@@ -1057,7 +1057,8 @@ libxl_domain_remus_info = Struct("domain_remus_info",[
     ("colo",                 libxl_defbool),
     ("event_driven", 	     libxl_defbool),
     ("polling",              libxl_defbool),
-    ("userspace_colo_proxy", libxl_defbool)
+    ("userspace_colo_proxy", libxl_defbool),
+    ("postfailovercmd",      string)
     ])
 
 libxl_event_type = Enumeration("event_type", [

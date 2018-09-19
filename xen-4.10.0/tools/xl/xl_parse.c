@@ -23,10 +23,12 @@
 #include <libxl.h>
 #include <libxl_utils.h>
 #include <libxlutil.h>
+#include <xenstore.h>
 
 #include "xl.h"
 #include "xl_utils.h"
 #include "xl_parse.h"
+
 
 extern void set_default_nic_values(libxl_device_nic *nic);
 
@@ -1914,6 +1916,8 @@ void parse_config_data(const char *config_source,
             }
             free(buf2);
         }
+        
+        
 	}
 
     if (!xlu_cfg_get_list (config, "vif", &nics, 0, 0)) {

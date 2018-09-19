@@ -1083,14 +1083,16 @@ static int x86_pv_process_record(struct xc_sr_context *ctx,
     }
 }
 
+
 /*
  * restore_ops function.  Update the vcpu context in Xen, pin the pagetables,
  * rewrite the p2m and seed the grant table.
  */
 static int x86_pv_stream_complete(struct xc_sr_context *ctx)
 {
-    xc_interface *xch = ctx->xch;
+	xc_interface *xch = ctx->xch;
     int rc;
+	
 
     rc = update_vcpu_context(ctx);
     if ( rc )
@@ -1109,11 +1111,13 @@ static int x86_pv_stream_complete(struct xc_sr_context *ctx)
                             ctx->restore.xenstore_gfn,
                             ctx->restore.console_domid,
                             ctx->restore.xenstore_domid);
+
     if ( rc )
     {
         PERROR("Failed to seed grant table");
         return rc;
     }
+
 
     return rc;
 }

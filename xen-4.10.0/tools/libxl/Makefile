@@ -314,7 +314,7 @@ libxl-save-helper: $(SAVE_HELPER_OBJS) libxenlight.so
 	$(CC) $(LDFLAGS) -o $@ $(SAVE_HELPER_OBJS) $(LDLIBS_libxentoollog) $(LDLIBS_libxenctrl) $(LDLIBS_libxenguest) $(LDLIBS_libxentoolcore) $(APPEND_LDFLAGS)
 
 cpsremus_heartbeat_rcv: $(CPSREMUS_HB_OBJS) libxenlight.so libxlutil.so
-	$(CC) $(LDFLAGS) -o $@ $(CPSREMUS_HB_OBJS) libxlutil.so $(LDLIBS_libxenlight) $(LDLIBS_libxentoollog) -lyajl $(APPEND_LDFLAGS)
+	$(CC) $(LDFLAGS) -o $@ $(CPSREMUS_HB_OBJS) libxlutil.so $(LDLIBS_libxenlight) $(LDLIBS_libxentoollog) -lyajl $(APPEND_LDFLAGS) -lmraa
 
 
 testidl: testidl.o libxlutil.so libxenlight.so
@@ -329,7 +329,6 @@ install: all
 	$(INSTALL_PROG) cpsremus_heartbeat_rcv $(DESTDIR)$(LIBEXEC_BIN)
 	$(INSTALL_PROG) cpsremus_heartbeat_send $(DESTDIR)$(LIBEXEC_BIN)
 	$(INSTALL_PROG) heartbeat_launcher $(DESTDIR)$(LIBEXEC_BIN)
-	$(INSTALL_PROG) pre_migrate $(DESTDIR)$(LIBEXEC_BIN)
 	$(INSTALL_SHLIB) libxenlight.so.$(MAJOR).$(MINOR) $(DESTDIR)$(libdir)
 	$(SYMLINK_SHLIB) libxenlight.so.$(MAJOR).$(MINOR) $(DESTDIR)$(libdir)/libxenlight.so.$(MAJOR)
 	$(SYMLINK_SHLIB) libxenlight.so.$(MAJOR) $(DESTDIR)$(libdir)/libxenlight.so

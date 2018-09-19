@@ -178,7 +178,11 @@ int libxl_domain_resume(libxl_ctx *ctx, uint32_t domid, int suspend_cancel,
                         const libxl_asyncop_how *ao_how)
 {
     AO_CREATE(ctx, domid, ao_how);
+
+
     int rc = libxl__domain_resume(gc, domid, suspend_cancel);
+
+	
     libxl__ao_complete(egc, ao, rc);
     return AO_INPROGRESS;
 }
@@ -509,7 +513,10 @@ int libxl_device_nic_send_gratuitous_arp(libxl_ctx *ctx, libxl_device_nic *nic)
 static void remus_failover_cb(libxl__egc *egc,
                               libxl__domain_save_state *dss, int rc)
 {
+
+
     STATE_AO_GC(dss->ao);
+
     /*
      * With Remus, if we reach this point, it means either
      * backup died or some network error occurred preventing us

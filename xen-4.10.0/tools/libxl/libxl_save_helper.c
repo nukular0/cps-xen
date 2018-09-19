@@ -50,6 +50,8 @@
 #include "xenguest.h"
 #include "_libxl_save_msgs_helper.h"
 
+
+
 /*----- logger -----*/
 
 __attribute__((format(printf, 5, 0)))
@@ -253,6 +255,7 @@ static void complete(int retval) {
 
 static struct restore_callbacks helper_restore_callbacks;
 
+
 int main(int argc, char **argv)
 {
     int r;
@@ -305,7 +308,6 @@ int main(int argc, char **argv)
 
         startup("restore");
         setup_signals(SIG_DFL);
-
         r = xc_domain_restore(xch, io_fd, dom, store_evtchn, &store_mfn,
                               store_domid, console_evtchn, &console_mfn,
                               console_domid, hvm, pae,

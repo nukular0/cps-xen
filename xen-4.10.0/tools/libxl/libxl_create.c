@@ -27,6 +27,14 @@
 
 #include <xen-xsm/flask/flask.h>
 
+static uint64_t get_diff_us(struct timeval *t1, struct timeval *t2){
+	return ((t2->tv_sec*1000000+t2->tv_usec) - (t1->tv_sec*1000000+t1->tv_usec));
+}
+
+static uint64_t get_ts_us(struct timeval *t){
+	return (t->tv_sec*1000000+t->tv_usec);
+}
+
 int libxl__domain_create_info_setdefault(libxl__gc *gc,
                                          libxl_domain_create_info *c_info)
 {
@@ -782,9 +790,6 @@ static void domcreate_rebuild_done(libxl__egc *egc,
                                    int ret);
 
 static void nic_create_cb(libxl__egc *egc, libxl__multidev *aodevs, int ret) { 
-	/*FILE *log = fopen("/tmp/remus_trace.log","a");
-	fprintf(log, "In %s\n", __func__);
-	fclose(log);*/
 return; }
 
 /* Our own function to clean up and call the user's callback.
@@ -799,6 +804,8 @@ static void domcreate_destruction_cb(libxl__egc *egc,
                                      libxl__domain_destroy_state *dds,
                                      int rc);
 
+
+
 static void initiate_domain_create(libxl__egc *egc,
                                    libxl__domain_create_state *dcs)
 {
@@ -811,8 +818,8 @@ static void initiate_domain_create(libxl__egc *egc,
     /* convenience aliases */
     libxl_domain_config *const d_config = dcs->guest_config;
     libxl__domain_build_state *const state = &dcs->build_state;
-    const int restore_fd = dcs->restore_fd;
-
+    const int restore_fd = dcs->restore_fd;	
+   
     domid = dcs->domid_soft_reset;
 
     if (d_config->c_info.ssid_label) {
@@ -1055,6 +1062,9 @@ static void domcreate_bootloader_done(libxl__egc *egc,
     libxl__domain_create_state *dcs = CONTAINER_OF(bl, *dcs, bl);
     STATE_AO_GC(bl->ao);
 
+	
+
+
     /* convenience aliases */
     const uint32_t domid = dcs->guest_domid;
     libxl_domain_config *const d_config = dcs->guest_config;
@@ -1286,6 +1296,15 @@ static void domcreate_launch_dm(libxl__egc *egc, libxl__multidev *multidev,
     libxl_domain_config *const d_config = dcs->guest_config;
     libxl__domain_build_state *const state = &dcs->build_state;
 
+	struct timeval t1;
+	
+    FILE *log;
+
+	gettimeofday(&t1, NULL);
+	log = fopen("/tmp/remus_trace.log", "a");
+	fprintf(log, "domcreate_launch_dm at %lu\n", get_ts_us(&t1));
+	fclose(log);
+
     if (ret) {
         LOGD(ERROR, domid, "unable to add disk devices");
         goto error_out;
@@ -1307,7 +1326,6 @@ static void domcreate_launch_dm(libxl__egc *egc, libxl__multidev *multidev,
             goto error_out;
         }
     }
-
     for (i = 0; i < d_config->b_info.num_irqs; i++) {
         int irq = d_config->b_info.irqs[i];
 
@@ -1321,7 +1339,6 @@ static void domcreate_launch_dm(libxl__egc *egc, libxl__multidev *multidev,
             goto error_out;
         }
     }
-
     for (i = 0; i < d_config->b_info.num_iomem; i++) {
         libxl_iomem_range *io = &d_config->b_info.iomem[i];
 
@@ -1349,7 +1366,6 @@ static void domcreate_launch_dm(libxl__egc *egc, libxl__multidev *multidev,
             goto error_out;
         }
     }
-
     /* For both HVM and PV the 0th console is a regular console. We
        map channels to IOEMU consoles starting at 1 */
     for (i = 0; i < d_config->num_channels; i++) {
@@ -1405,21 +1421,18 @@ static void domcreate_launch_dm(libxl__egc *egc, libxl__multidev *multidev,
     {
         libxl__device_console console, vuart;
         libxl__device device;
-
         for (i = 0; i < d_config->num_vfbs; i++) {
             libxl__device_add(gc, domid, &libxl__vfb_devtype,
                               &d_config->vfbs[i]);
             libxl__device_add(gc, domid, &libxl__vkb_devtype,
                               &d_config->vkbs[i]);
         }
-
         if (d_config->b_info.arch_arm.vuart == LIBXL_VUART_TYPE_SBSA_UART) {
             init_console_info(gc, &vuart, 0);
             vuart.backend_domid = state->console_domid;
             libxl__device_vuart_add(gc, domid, &vuart, state);
             libxl__device_console_dispose(&vuart);
         }
-
         init_console_info(gc, &console, 0);
         console.backend_domid = state->console_domid;
         libxl__device_console_add(gc, domid, &console, state, &device);
@@ -1505,6 +1518,15 @@ static void domcreate_attach_devices(libxl__egc *egc,
     libxl_domain_config *const d_config = dcs->guest_config;
     const struct libxl_device_type *dt;
 
+	struct timeval t1, t2, t3, t4;
+	
+    FILE *log;
+
+	gettimeofday(&t1, NULL);
+	log = fopen("/tmp/remus_trace.log", "a");
+	fprintf(log, "domcreate_attach_devices at %lu\n", get_ts_us(&t1));
+	fclose(log);
+
     if (ret) {
         LOGD(ERROR, domid, "unable to add %s devices",
              device_type_tbl[dcs->device_type_idx]->type);
@@ -1518,10 +1540,15 @@ static void domcreate_attach_devices(libxl__egc *egc,
             if (dt == &libxl__nic_devtype && dcs->restore_fd >= 0)
                 goto skip_attach;
             /* Attach devices */
+            gettimeofday(&t3, NULL);
             libxl__multidev_begin(ao, &dcs->multidev);
             dcs->multidev.callback = domcreate_attach_devices;
             dt->add(egc, ao, domid, d_config, &dcs->multidev);
             libxl__multidev_prepared(egc, &dcs->multidev, 0);
+            gettimeofday(&t4, NULL);
+			log = fopen("/tmp/remus_trace.log", "a");
+			fprintf(log, "adding %d took %luus\n",dcs->device_type_idx, get_diff_us(&t3, &t4));
+			fclose(log);
             return;
         }
 
@@ -1532,6 +1559,10 @@ skip_attach:
 
     domcreate_console_available(egc, dcs);
 
+	gettimeofday(&t2, NULL);
+	log = fopen("/tmp/remus_trace.log", "a");
+	fprintf(log, "domcreate_attach_devices t2 at %lu (+ %luus)\n", get_ts_us(&t2), get_diff_us(&t1, &t2));
+	fclose(log);
     domcreate_complete(egc, dcs, 0);
 
     return;
@@ -1549,7 +1580,7 @@ static void domcreate_devmodel_started(libxl__egc *egc,
     STATE_AO_GC(dmss->spawn.ao);
     int domid = dcs->guest_domid;
 
-    /* convenience aliases */
+	/* convenience aliases */
     libxl_domain_config *const d_config = dcs->guest_config;
 
     if (ret) {
@@ -1565,6 +1596,7 @@ static void domcreate_devmodel_started(libxl__egc *egc,
     }
 
     dcs->device_type_idx = -1;
+
     domcreate_attach_devices(egc, &dcs->multidev, 0);
     return;
 
@@ -1580,6 +1612,7 @@ static void domcreate_complete(libxl__egc *egc,
     STATE_AO_GC(dcs->ao);
     libxl_domain_config *const d_config = dcs->guest_config;
     libxl_domain_config *d_config_saved = &dcs->guest_config_saved;
+
 
     libxl__file_reference_unmap(&dcs->build_state.pv_kernel);
     libxl__file_reference_unmap(&dcs->build_state.pv_ramdisk);
@@ -1655,6 +1688,8 @@ static void domain_create_cb(libxl__egc *egc,
                              libxl__domain_create_state *dcs,
                              int rc, uint32_t domid);
 
+
+
 static int do_domain_create(libxl_ctx *ctx, libxl_domain_config *d_config,
                             uint32_t *domid, int restore_fd, int send_back_fd,
                             const libxl_domain_restore_params *params,
@@ -1698,6 +1733,7 @@ static int do_domain_create(libxl_ctx *ctx, libxl_domain_config *d_config,
 
     initiate_domain_create(egc, &cdcs->dcs);
 
+	
     return AO_INPROGRESS;
 
  out_err:
@@ -1860,7 +1896,7 @@ static void domain_create_cb(libxl__egc *egc,
     libxl__app_domain_create_state *cdcs = CONTAINER_OF(dcs, *cdcs, dcs);
     int flrc;
     STATE_AO_GC(cdcs->dcs.ao);
-
+	
     *cdcs->domid_out = domid;
 
     if (dcs->restore_fd > -1) {
@@ -1910,14 +1946,17 @@ int libxl_domain_create_restore(libxl_ctx *ctx, libxl_domain_config *d_config,
                                 const libxl_asyncop_how *ao_how,
                                 const libxl_asyncprogress_how *aop_console_how)
 {
+   
     if (params->checkpointed_stream == LIBXL_CHECKPOINTED_STREAM_COLO) {
         set_disk_colo_restore(d_config);
     } else {
         unset_disk_colo_restore(d_config);
     }
 
+	
     return do_domain_create(ctx, d_config, domid, restore_fd, send_back_fd,
                             params, ao_how, aop_console_how);
+
 }
 
 int libxl_domain_soft_reset(libxl_ctx *ctx,

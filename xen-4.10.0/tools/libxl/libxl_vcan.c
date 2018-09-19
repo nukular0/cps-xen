@@ -64,8 +64,7 @@ static int libxl__set_xenstore_vcan(libxl__gc *gc, uint32_t domid,
                                       flexarray_t *ro_front)
 {
 				  
-	
-    flexarray_append_pair(ro_front, "dev-id",
+	flexarray_append_pair(ro_front, "dev-id",
                           GCSPRINTF("%d", (10*domid + vcan->devid)));
 	
     flexarray_append_pair(back, "dev-id",

@@ -621,6 +621,7 @@ static void autoconnect_console(libxl_ctx *ctx_ignored,
     uint32_t bldomid = ev->domid;
     int notify_fd = *(int*)priv; /* write end of the notification pipe */
 
+
     libxl_event_free(ctx, ev);
 
     console_child_report(child_console);
@@ -630,13 +631,14 @@ static void autoconnect_console(libxl_ctx *ctx_ignored,
         return;
 
     postfork();
-
     sleep(1);
     libxl_primary_console_exec(ctx, bldomid, notify_fd);
+   
     /* Do not return. xl continued in child process */
     perror("xl: unable to exec console client");
     _exit(1);
 }
+
 
 int create_domain(struct domain_create *dom_info)
 {
@@ -682,6 +684,8 @@ int create_domain(struct domain_create *dom_info)
         const uint8_t *optdata_here = 0;
         union { uint32_t u32; char b[4]; } u32buf;
         uint32_t badflags;
+
+		
 
         if (migrate_fd >= 0) {
             restore_source = "<incoming migration stream>";
@@ -844,6 +848,7 @@ start:
     assert(domid == INVALID_DOMID);
 
     rc = acquire_lock();
+
     if (rc < 0)
         goto error_out;
 
@@ -869,6 +874,7 @@ start:
     }
 
     if ( restoring ) {
+		
         libxl_domain_restore_params params;
 
         libxl_domain_restore_params_init(&params);
@@ -880,18 +886,21 @@ start:
         libxl_defbool_set(&params.userspace_colo_proxy,
                           dom_info->userspace_colo_proxy);
 
+
+		
         ret = libxl_domain_create_restore(ctx, &d_config,
                                           &domid, restore_fd,
                                           send_back_fd, &params,
                                           0, autoconnect_console_how);
 
         libxl_domain_restore_params_dispose(&params);
-
+		
         /*
          * On subsequent reboot etc we should create the domain, not
          * restore/migrate-receive it again.
          */
         restoring = 0;
+		
     } else if (domid_soft_reset != INVALID_DOMID) {
         /* Do soft reset. */
         ret = libxl_domain_soft_reset(ctx, &d_config, domid_soft_reset,
@@ -984,7 +993,9 @@ start:
     }
     while (1) {
         libxl_event *event;
+        
         ret = domain_wait_event(domid, &event);
+        
         if (ret) goto out;
 
         switch (event->type) {

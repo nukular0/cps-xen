@@ -728,6 +728,7 @@ static void cleanup(struct xc_sr_context *ctx)
         PERROR("Failed to clean up");
 }
 
+
 /*
  * Restore a domain.
  */
@@ -802,8 +803,8 @@ static int restore(struct xc_sr_context *ctx)
      * With Remus, if we reach here, there must be some error on primary,
      * failover from the last checkpoint state.
      */
-    cpsr_log = fopen("/tmp/remus_trace.log", "a");
     gettimeofday(&tv, NULL);
+    cpsr_log = fopen("/tmp/remus_trace.log", "a");
     fprintf(cpsr_log, "Time broken channel is recognized in xc: %lu\n", tv.tv_sec*1000000+tv.tv_usec);
     fclose(cpsr_log);
 
@@ -821,12 +822,12 @@ static int restore(struct xc_sr_context *ctx)
 
  done:
     cleanup(ctx);
-
     if ( saved_rc )
     {
         rc = saved_rc;
         errno = saved_errno;
     }
+
 
     return rc;
 }
@@ -918,9 +919,9 @@ int xc_domain_restore(xc_interface *xch, int io_fd, uint32_t dom,
             ctx.restore.console_gfn,
             ctx.restore.console_domid,
             ctx.restore.console_evtchn);
-
     *console_gfn = ctx.restore.console_gfn;
     *store_mfn = ctx.restore.xenstore_gfn;
+
 
     return 0;
 }

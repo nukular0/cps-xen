@@ -1,18 +1,21 @@
 #!/bin/bash
 
 modules=( "mcp2515_init" "xen_pvcanback" )
+parameters=( "" "interface=vcan0" )
 
 loaded_modules=$(lsmod)
 
-for module in ${modules[@]}
+for i in "${!modules[@]}"  
 do
+	module=${modules[i]}
+	par=${parameters[i]}
 	loaded=$(echo "$loaded_modules" | grep $module)
     if [ ! -z "$loaded" ]; 
 	then
 		echo "$module already loaded"
 	else
-		echo "$module not loaded, loading now"
-		modprobe $module
+		printf "%s not loaded, loading now: modprobe %s %s\n" "$module" "$module" "$par"
+		modprobe $module $par
 	fi
 done
 

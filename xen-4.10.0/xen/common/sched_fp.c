@@ -33,7 +33,7 @@
  * 3 print ingoing and outgoing vcpu in do_schedule()
  * 4 print run queue
   */
-#define DLEVEL 2
+#define DLEVEL 0
 #define PRINT(_f, _a...)                        \
     do {                                        \
         if ( (_f) == DLEVEL )                \
@@ -785,8 +785,8 @@ static void fp_sleep (const struct scheduler *ops, struct vcpu *vc)
     struct fp_vcpu *const fpv = FPSCHED_VCPU (vc);
     const unsigned int cpu = vc->processor;
 
-    PRINT (1, "in fp_sleep\n");
-    PRINT (2, "CPU %d in fp_sleep\n", cpu);
+    //~ PRINT (1, "in fp_sleep\n");
+    //~ PRINT (2, "CPU %d in fp_sleep\n", cpu);
 
     if (is_idle_vcpu (vc))
         return;
@@ -819,12 +819,15 @@ static void fp_vcpu_wake (const struct scheduler *ops, struct vcpu *vc)
             PRINT(1, "in fp_vcpu_wake, CPU: %d, \n", cpu);
             prv->last_time_temp = now;
         }
+       // PRINT(4, "time spend in fp_vcpu_wake, CPU %d: %d\n", cpu, NOW() - now);
         return;
     }
 
     __runq_insert (cpu, fpv, FPSCHED_PRIV (ops)->config->compare);
     FPSCHED_PRIV (ops)->config->prio_handler (vc->domain, fpv->priority);
     cpu_raise_softirq (cpu, SCHEDULE_SOFTIRQ);
+    
+	//PRINT(4, "time spend in fp_vcpu_wake, CPU %d: %d\n", cpu, NOW() - now);
 }
 
 static void fp_vcpu_remove (const struct scheduler *ops, struct vcpu *vc)
